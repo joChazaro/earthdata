@@ -7,23 +7,23 @@ function usage {
   echo ""
   echo "Description:"
   echo "  This script will recursively download files for a specified range of Julian days"
-  echo "  from a LAADS URL and upload them to the specified S3 path"
+  echo "  from a LAADS URL and upload them to an S3 bucket with folders for each day"
   echo ""
   echo "Options:"
   echo "    -u|--url [URL]            Base URL for LAADS data (e.g., https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5019/XAERDT_L2_ABI_G16)"
-  echo "    -p|--s3-path [path]       S3 path (e.g., subfolder1/subfolder2)"
+  echo "    -b|--bucket [bucket]      S3 bucket name"
   echo "    -t|--token [token]        Use app token [token] to authenticate"
   echo "    -s|--start [day]          Start Julian day"
   echo "    -e|--end [day]            End Julian day"
   ""
   echo "Dependencies:"
-  echo "  Requires 'jq' and 'aws' which should be installed and configured"
+  echo "  Requires 'jq' and 'awscli' which should be installed"
 }
 
 # Function to recursively download files for a range of Julian days and upload to S3
 function download_and_upload_to_s3 {
   local base_url=$1
-  local s3_path=$2
+  local s3_bucket=$2
   local token=$3
   local start_julian_day=$4
   local end_julian_day=$5
@@ -35,18 +35,17 @@ function download_and_upload_to_s3 {
     
     echo "Querying ${url}.json for Julian day ${julian_day_str}"
 
-    for file in $(curl -L -b session -s -g -H "Authorization: Bearer ${token}" -C - ${url}.json | jq '.content | .[] | select(.size!=0) | .name' | tr -d '"')
+    for file in $(curl -L -s -g -H "Authorization: Bearer ${token}" -C - ${url}.json | jq '.content | .[] | select(.size!=0) | .name' | tr -d '"')
     do
       local local_file="${file}"
-      local s3_uri="s3://${s3_path}/${file}"
 
       if [ ! -f ${local_file} ] 
       then
         echo "Downloading $file to ${local_file}"
-        curl -L -b session -s -g -H "Authorization: Bearer ${token}" -C - ${url}/${file} -o ${local_file}
+        curl -L -s -g -H "Authorization: Bearer ${token}" -C - ${url}/${file} -o ${local_file}
 
-        echo "Uploading $local_file to $s3_uri"
-        aws s3 cp ${local_file} ${s3_uri}
+        echo "Uploading $local_file to s3://${s3_bucket}/${julian_day_str}/${file}"
+        aws s3 cp ${local_file} "s3://${s3_bucket}/${julian_day_str}/${file}"
       else
         echo "Skipping $file ..."
       fi
@@ -66,8 +65,8 @@ do
     shift # past argument
     shift # past value
     ;;
-    -p|--s3-path)
-    s3_path="$2"
+    -b|--bucket)
+    s3_bucket="$2"
     shift # past argument
     shift # past value
     ;;
@@ -101,9 +100,9 @@ then
   exit 1
 fi
 
-if [ -z ${s3_path+x} ]
+if [ -z ${s3_bucket+x} ]
 then 
-  echo "S3 path is not specified"
+  echo "S3 bucket name is not specified"
   usage
   exit 1
 fi
@@ -129,6 +128,6 @@ then
   exit 1
 fi
 
-# Invoking the download and upload function for the specified Julian day range
-download_and_upload_to_s3 "$base_url" "$s3_path" "$token" "$start_julian_day" "$end_julian_day"
+# Invoking the download and upload to S3 function for the specified Julian day range
+download_and_upload_to_s3 "$base_url" "$s3_bucket" "$token" "$start_julian_day" "$end_julian_day"
 
