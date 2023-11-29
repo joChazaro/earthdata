@@ -39,15 +39,19 @@ function download_and_upload_to_s3 {
     do
       local local_file="${file}"
 
-      if [ ! -f ${local_file} ] 
+      # Check if the local file exists before attempting to upload
+      if [ -f ${local_file} ] 
       then
         echo "Downloading $file to ${local_file}"
         curl -L -s -g -H "Authorization: Bearer ${token}" -C - ${url}/${file} -o ${local_file}
 
-        echo "Uploading $local_file to s3://${s3_bucket}/${julian_day_str}/${file}"
-        aws s3 cp ${local_file} "s3://${s3_bucket}/${julian_day_str}/${file}"
+        # Use only the three digits of the Julian day for the S3 folder name
+        s3_folder_name="${julian_day_str}"
+
+        echo "Uploading $local_file to s3://${s3_bucket}/${s3_folder_name}/${file}"
+        aws s3 cp ${local_file} "s3://${s3_bucket}/${s3_folder_name}/${file}"
       else
-        echo "Skipping $file ..."
+        echo "Skipping $file because the local file does not exist."
       fi
     done
   done
