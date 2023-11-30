@@ -23,14 +23,23 @@ for ((day=start_day; day<=end_day; day++)); do
 
     echo "Downloading from: $url"
 
-    # Redirect standard output and standard error to the log file
-    wget -e robots=off -r -np -nH --cut-dirs=5 --reject=html,tmp --header "Authorization: Bearer $authorization_token" -P ./tmpFiles "$url" >> "$log_file" 2>&1
+    # Download the JSON file using curl
+    curl_output=$(curl -s "$url.json")
 
-    if [ $? -eq 0 ]; then
-        echo "Download successful for $url" >> "$log_file"
-    else
-        echo "Error downloading $url. See $log_file for details." >&2
-    fi
+    # Extract download links from the JSON file using jq
+    download_links=($(echo "$curl_output" | jq -r '.content[].downloadsLink'))
+
+    # Loop through the array of download links and use wget for each
+    for link in "${download_links[@]}"; do
+        echo "Downloading file: $link"
+        wget --header "Authorization: Bearer $authorization_token" -P ./tmpFiles "$link" >> "$log_file" 2>&1
+
+        if [ $? -eq 0 ]; then
+            echo "Download successful for $link" >> "$log_file"
+        else
+            echo "Error downloading $link. See $log_file for details." >&2
+        fi
+    done
 
     aws s3 cp ./tmpFiles s3://$bucket_name/ --recursive
 
