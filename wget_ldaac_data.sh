@@ -1,15 +1,22 @@
-#!/bin/bash 
+#!/bin/bash
 
-base_url="https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5019/XAERDT_L2_ABI_G16/2019/"
-bucket_name="eso-west2-curated/AOS/PoR/geo/XAERDT_L2_ABI_G16/2019"
-# Set your range of Julian days (replace 215 and 304 with your desired range)
-start_day=291
-end_day=304
+# Prompt the user for input
+read -p "Enter base URL: " base_url
+read -p "Enter S3 bucket name: " bucket_name
+read -p "Enter single day (Y/N): " is_single_day
 
-authorization_token="$1"
+if [ "$is_single_day" == "Y" ] || [ "$is_single_day" == "y" ]; then
+    read -p "Enter day: " start_day
+    end_day=$start_day
+else
+    read -p "Enter start day: " start_day
+    read -p "Enter end day: " end_day
+fi
+
+read -p "Enter authorization token: " authorization_token
 
 # Loop through the range of Julian days
-for ((day=$start_day; day<=$end_day; day++)); do
+for ((day=start_day; day<=end_day; day++)); do
     url="${base_url}${day}"
 
     echo "Downloading from: $url"
@@ -19,3 +26,4 @@ for ((day=$start_day; day<=$end_day; day++)); do
 
     rm -r ./tmpFiles/*
 done
+
