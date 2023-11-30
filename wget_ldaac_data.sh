@@ -15,12 +15,22 @@ fi
 
 read -p "Enter authorization token: " authorization_token
 
+log_file="./download_log.txt"
+
 # Loop through the range of Julian days
 for ((day=start_day; day<=end_day; day++)); do
     url="${base_url}${day}"
 
     echo "Downloading from: $url"
-    wget -e robots=off -r -np -nH --cut-dirs=5 --reject=html,tmp --header "Authorization: Bearer $authorization_token" -P ./tmpFiles "$url"
+
+    # Redirect standard output and standard error to the log file
+    wget -e robots=off -r -np -nH --cut-dirs=5 --reject=html,tmp --header "Authorization: Bearer $authorization_token" -P ./tmpFiles "$url" >> "$log_file" 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "Download successful for $url" >> "$log_file"
+    else
+        echo "Error downloading $url. See $log_file for details." >&2
+    fi
 
     aws s3 cp ./tmpFiles s3://$bucket_name/ --recursive
 
