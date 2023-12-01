@@ -53,8 +53,8 @@ for ((day=start_day; day<=end_day; day++)); do
 
     aws s3 cp ./tmpFiles s3://$bucket_name/$day --recursive
 
-    # Print the number of successful uploads for the current day
-    echo "Number of successful uploads for day $day: $successful_uploads"
+    # Print the success rate for the current day
+    echo "Successfully uploaded files for day $day: $successful_uploads out of $expected_files"
 
     # Clear the temporary directory
     rm -r ./tmpFiles/*
