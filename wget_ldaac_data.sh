@@ -41,7 +41,7 @@ for ((day=start_day; day<=end_day; day++)); do
         fi
     done
 
-    aws s3 cp ./tmpFiles s3://$bucket_name/ --recursive
+    aws s3 cp ./tmpFiles s3://$bucket_name/$day --recursive
 
     rm -r ./tmpFiles/*
 done
