@@ -17,6 +17,10 @@ read -p "Enter authorization token: " authorization_token
 
 log_file="./download_log.txt"
 
+# Initialize counters
+expected_files=0
+successful_uploads=0
+
 # Loop through the range of Julian days
 for ((day=start_day; day<=end_day; day++)); do
     url="${base_url}${day}"
@@ -29,6 +33,9 @@ for ((day=start_day; day<=end_day; day++)); do
     # Extract download links from the JSON file using jq
     download_links=($(echo "$curl_output" | jq -r '.content[].downloadsLink'))
 
+    # Update the expected files counter
+    expected_files=$((expected_files + ${#download_links[@]}))
+
     # Loop through the array of download links and use wget for each
     for link in "${download_links[@]}"; do
         echo "Downloading file: $link"
@@ -36,6 +43,7 @@ for ((day=start_day; day<=end_day; day++)); do
 
         if [ $? -eq 0 ]; then
             echo "Download successful for $link" >> "$log_file"
+            successful_uploads=$((successful_uploads + 1))
         else
             echo "Error downloading $link. See $log_file for details." >&2
         fi
@@ -43,6 +51,11 @@ for ((day=start_day; day<=end_day; day++)); do
 
     aws s3 cp ./tmpFiles s3://$bucket_name/$day --recursive
 
+    # Clear the temporary directory
     rm -r ./tmpFiles/*
 done
+
+# Print the results
+echo "Expected number of files: $expected_files"
+echo "Number of successfully uploaded files: $successful_uploads"
 
