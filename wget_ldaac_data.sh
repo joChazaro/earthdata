@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Clear the log file at the beginning of the script
+log_file="./download_log.txt"
+> "$log_file"
+
 # Prompt the user for input
 read -p "Enter base URL: " base_url
 read -p "Enter S3 bucket name: " bucket_name
@@ -14,8 +18,6 @@ else
 fi
 
 read -p "Enter authorization token: " authorization_token
-
-log_file="./download_log.txt"
 
 # Initialize counters
 expected_files=0
