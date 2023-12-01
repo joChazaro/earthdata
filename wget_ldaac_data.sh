@@ -37,18 +37,24 @@ for ((day=start_day; day<=end_day; day++)); do
     echo "Expected number of files for day $day: $expected_files"
 
     # Loop through the array of download links and use wget for each
+    successful_uploads=0  # Counter for successful uploads for the current day
+
     for link in "${download_links[@]}"; do
         echo "Downloading file: $link"
         wget --header "Authorization: Bearer $authorization_token" -P ./tmpFiles "$link" >> "$log_file" 2>&1
 
         if [ $? -eq 0 ]; then
             echo "Download successful for $link" >> "$log_file"
+            successful_uploads=$((successful_uploads + 1))
         else
             echo "Error downloading $link. See $log_file for details." >&2
         fi
     done
 
     aws s3 cp ./tmpFiles s3://$bucket_name/$day --recursive
+
+    # Print the number of successful uploads for the current day
+    echo "Number of successful uploads for day $day: $successful_uploads"
 
     # Clear the temporary directory
     rm -r ./tmpFiles/*
