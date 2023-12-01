@@ -19,10 +19,6 @@ fi
 
 read -p "Enter authorization token: " authorization_token
 
-# Initialize counters
-expected_files=0
-successful_uploads=0
-
 # Loop through the range of Julian days
 for ((day=start_day; day<=end_day; day++)); do
     url="${base_url}${day}"
@@ -36,7 +32,9 @@ for ((day=start_day; day<=end_day; day++)); do
     download_links=($(echo "$curl_output" | jq -r '.content[].downloadsLink'))
 
     # Update the expected files counter
-    expected_files=$((expected_files + ${#download_links[@]}))
+    expected_files=${#download_links[@]}
+
+    echo "Expected number of files for day $day: $expected_files"
 
     # Loop through the array of download links and use wget for each
     for link in "${download_links[@]}"; do
@@ -45,7 +43,6 @@ for ((day=start_day; day<=end_day; day++)); do
 
         if [ $? -eq 0 ]; then
             echo "Download successful for $link" >> "$log_file"
-            successful_uploads=$((successful_uploads + 1))
         else
             echo "Error downloading $link. See $log_file for details." >&2
         fi
@@ -56,8 +53,4 @@ for ((day=start_day; day<=end_day; day++)); do
     # Clear the temporary directory
     rm -r ./tmpFiles/*
 done
-
-# Print the results
-echo "Expected number of files: $expected_files"
-echo "Number of successfully uploaded files: $successful_uploads"
 
