@@ -1,21 +1,49 @@
-# Earthdata Downloader
+# NASA Earthdata DAAC Data Downloader
 
-This script is designed to recursively download files for a specified range of Julian days from a LAADS (Level 1 and Atmosphere Archive & Distribution System) URL and create folders for each day in the destination path.
+## Overview
+
+This Bash script is designed to simplify the process of downloading data from NASA's Earthdata Data Archive and Access Centers (DAACs) and uploading it to an Amazon S3 bucket. The script prompts the user for input, including the base URL, S3 bucket name, date range, and authorization token. It then iterates through the specified date range, downloading data files using curl and uploading them to the specified S3 bucket using AWS CLI.
+
+## Prerequisites
+
+- Bash
+- curl
+- jq
+- wget
+- AWS CLI configured with the necessary credentials and permissions
+
+## Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/earthdata.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash 
+   cd earthdata
+   ```
+3. Ensure the necessary dependencies are installed. 
 
 ## Usage
 
-```bash
-./earthdata_downloader.sh [options]
-```
-## Options
-```
--u|--url [URL]: Base URL for LAADS data (e.g., https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5019/XAERDT_L2_ABI_G16/2019/)
--d|--destination [path]: Destination directory to store files
--t|--token [token]: Use app token [token] to authenticate
--s|--start [day]: Start Julian day
--e|--end [day]: End Julian day
-```
+### Assumptions
 
-## Example 
-```bash
-./earthdata_downloader.sh -u "https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5019/XAERDT_L2_ABI_G16/2019/" -d "/path/to/destination" -t "your_app_token" -s 213 -e 304
+- The script assumes that the necessary command-line tools (`curl`, `jq`, `wget`, AWS CLI) are installed and configured on the system.
+- An Amazon S3 bucket is available and configured with the necessary permissions.
+- Users have valid authorization tokens for accessing the specified DAAC.
+
+### Running the Script
+
+1. Make the script executable:
+
+   ```bash
+   chmod +x get_data_to_s3.sh
+   ```
+2. Execute the script:
+   ```bash 
+   ./get_data_to_s3.sh
+   ```
+   Then follow the prompts to enter the required information 
+
