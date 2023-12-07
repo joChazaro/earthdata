@@ -12,11 +12,12 @@ prompt_user() {
 }
 
 # Parse command-line options
-while getopts ":u:b:s:t:" opt; do
+while getopts ":u:b:s:e:t:" opt; do
   case $opt in
     u) base_url=$OPTARG ;;
     b) bucket_name=$OPTARG ;;
-    s) is_single_day=$OPTARG ;;
+    s) start_day=$OPTARG ;;
+    e) end_day=$OPTARG ;;
     t) authorization_token=$OPTARG ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         exit 1
@@ -30,14 +31,16 @@ done
 # Prompt user for input if not provided through command-line options
 [ -z "$base_url" ] && prompt_user "Enter base URL: " base_url
 [ -z "$bucket_name" ] && prompt_user "Enter S3 bucket name: " bucket_name
-[ -z "$is_single_day" ] && prompt_user "Enter single day (Y/N): " is_single_day
+[ -z "$start_day" ] && prompt_user "Enter start day: " start_day
 
-if [ "$is_single_day" == "Y" ] || [ "$is_single_day" == "y" ]; then
-    [ -z "$start_day" ] && prompt_user "Enter day: " start_day
+is_single_day=""
+# Prompt user for input only if the -e option is not provided
+[ -z "$end_day" ] && prompt_user "Enter end day (leave empty for single day): " is_single_day
+
+if [ -z "$end_day" ] && ([ "$is_single_day" == "Y" ] || [ "$is_single_day" == "y" ]); then
     end_day=$start_day
-else
-    [ -z "$start_day" ] && prompt_user "Enter start day: " start_day
-    [ -z "$end_day" ] && prompt_user "Enter end day: " end_day
+elif [ -z "$end_day" ]; then
+    prompt_user "Enter end day: " end_day
 fi
 
 [ -z "$authorization_token" ] && prompt_user "Enter authorization token: " authorization_token
