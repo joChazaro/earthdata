@@ -17,7 +17,7 @@ This Bash script is designed to simplify the process of downloading data from NA
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/earthdata.git
+   git clone https://github.com/joChazaro/earthdata.git
    ```
 
 2. Navigate to the project directory:
