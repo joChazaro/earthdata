@@ -1,5 +1,48 @@
 #!/bin/bash
 
+# Display script usage manual
+display_manual() {
+    echo "Usage: $0 -u BASE_URL -b BUCKET_NAME -s START_DAY [-e END_DAY] -t AUTH_TOKEN"
+    echo ""
+    echo "Options:"
+    echo "  -u BASE_URL             Set the base URL for downloading files"
+    echo "  -b BUCKET_NAME          Set the S3 bucket name for uploading files"
+    echo "  -s START_DAY            Set the start day for the range of days"
+    echo "  -e END_DAY              Set the end day for the range of days (optional, defaults to start day)"
+    echo "  -t AUTH_TOKEN           Set the authorization token for authentication"
+    echo ""
+    echo "Example:"
+    echo "  $0 -u https://example.com/data/ -b mybucket -s 20230101 -e 20230105 -t mytoken"
+    exit 1
+}
+
+# Check if there are no command-line arguments
+if [ "$#" -eq 0 ]; then
+    display_manual
+fi
+
+# Parse command-line options
+while getopts ":u:b:s:e:t:" opt; do
+    case $opt in
+        u) base_url=$OPTARG ;;
+        b) bucket_name=$OPTARG ;;
+        s) start_day=$OPTARG ;;
+        e) end_day=$OPTARG ;;
+        t) authorization_token=$OPTARG ;;
+        \?) echo "Invalid option: -$OPTARG" >&2
+            display_manual
+            ;;
+        :) echo "Option -$OPTARG requires an argument." >&2
+            display_manual
+            ;;
+    esac
+done
+
+# Check if required options are provided
+if [ -z "$base_url" ] || [ -z "$bucket_name" ] || [ -z "$start_day" ] || [ -z "$authorization_token" ]; then
+    display_manual
+fi
+
 # Clear the log file at the beginning of the script
 log_file="./download_log.txt"
 > "$log_file"
@@ -10,23 +53,6 @@ prompt_user() {
     local variable_name=$2
     read -p "$prompt_text" "$variable_name"
 }
-
-# Parse command-line options
-while getopts ":u:b:s:e:t:" opt; do
-  case $opt in
-    u) base_url=$OPTARG ;;
-    b) bucket_name=$OPTARG ;;
-    s) start_day=$OPTARG ;;
-    e) end_day=$OPTARG ;;
-    t) authorization_token=$OPTARG ;;
-    \?) echo "Invalid option: -$OPTARG" >&2
-        exit 1
-        ;;
-    :) echo "Option -$OPTARG requires an argument." >&2
-        exit 1
-        ;;
-  esac
-done
 
 # Prompt user for input if not provided through command-line options
 [ -z "$base_url" ] && prompt_user "Enter base URL: " base_url
