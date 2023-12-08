@@ -54,7 +54,7 @@ prompt_user() {
     read -p "$prompt_text" "$variable_name"
 }
 
-# Prompt user for input if not provided through command-line options
+# Check for missing values for provided options
 [ -z "$base_url" ] && prompt_user "Enter base URL: " base_url
 [ -z "$bucket_name" ] && prompt_user "Enter S3 bucket name: " bucket_name
 [ -z "$start_day" ] && prompt_user "Enter start day: " start_day
