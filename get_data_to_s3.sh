@@ -61,12 +61,13 @@ prompt_user() {
 
 is_single_day=""
 # Prompt user for input only if the -e option is not provided
-[ -z "$end_day" ] && prompt_user "Enter end day (leave empty for single day): " is_single_day
-
-if [ -z "$end_day" ] && ([ "$is_single_day" == "Y" ] || [ "$is_single_day" == "y" ]); then
-    end_day=$start_day
-elif [ -z "$end_day" ]; then
-    prompt_user "Enter end day: " end_day
+if [ -z "$end_day" ]; then
+    prompt_user "Enter end day (leave empty for single day): " is_single_day
+    if [ "${is_single_day,,}" == "y" ]; then
+        end_day=$start_day
+    elif [ -z "$is_single_day" ]; then
+        prompt_user "Enter end day: " end_day
+    fi
 fi
 
 [ -z "$authorization_token" ] && prompt_user "Enter authorization token: " authorization_token
