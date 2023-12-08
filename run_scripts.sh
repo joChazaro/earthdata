@@ -24,7 +24,7 @@ if [ $? -eq 0 ]; then
     ACCESS_TOKEN=$(./retrieve_tokens.sh -q)
 
     # Call get_data_to_s3.sh with the obtained inputs
-    ./get_data_to_s3.sh -u "$BASE_URL" -b "$BUCKET_NAME" -s "$START_DAY" -e "$END_DAY" -t "$ACCESS_TOKEN"
+    ./get_data_to_s3.sh -u "$BASE_URL" -b "$BUCKET_NAME" -s "$START_DAY" -e "$END_DAY" -t "$ACCESS_TOKEN" "$@"
 else
     echo "Error: Failed to retrieve access tokens. Please check your credentials."
 fi
